@@ -1,0 +1,73 @@
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ShamirSecretSharing {
+
+    static class Point {
+        int x; // x coordinate
+        BigInteger y; // y coordinate
+
+        Point(int x, BigInteger y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Test Case 1
+        List<Point> points1 = new ArrayList<>();
+        
+        points1.add(new Point(1, decodeValue("4", 10))); // (1, 4)
+        points1.add(new Point(2, decodeValue("111", 2))); // (2, 7)
+        points1.add(new Point(3, decodeValue("12", 10))); // (3, 12)
+        points1.add(new Point(6, decodeValue("213", 4))); // (6, 27)
+
+        // Calculate the constant term c using Lagrange interpolation
+        BigInteger c1 = lagrangeInterpolation(points1, BigInteger.ZERO);
+        System.out.println("Test Case 1 Secret (c): " + c1);  
+
+        // Test Case 2
+        List<Point> points2 = new ArrayList<>();
+
+        points2.add(new Point(1, decodeValue("28735619723837", 10)));
+        points2.add(new Point(2, decodeValue("1A228867F0CA", 16)));
+        points2.add(new Point(3, decodeValue("32811A4AA0B7B", 12)));
+        points2.add(new Point(4, decodeValue("917978721331A", 11)));
+        points2.add(new Point(5, decodeValue("1A22886782E1", 16)));
+        points2.add(new Point(6, decodeValue("28735619654702", 10)));
+        points2.add(new Point(7, decodeValue("71AB5070CC4B", 14)));
+        points2.add(new Point(8, decodeValue("122662581541670", 9)));
+        points2.add(new Point(9, decodeValue("642121030037605", 8)));
+
+        // Calculate the constant term c for the second test case
+        BigInteger c2 = lagrangeInterpolation(points2, BigInteger.ZERO);
+        System.out.println("Test Case 2 Secret (c): " + formatBigInteger(c2)); // Output formatted result for Test Case 2
+    }
+
+    // Decode the given value based on the specified base
+    private static BigInteger decodeValue(String value, int base) {
+        return new BigInteger(value, base);
+    }
+
+    // Lagrange interpolation to find the polynomial value at x=0
+    private static BigInteger lagrangeInterpolation(List<Point> points, BigInteger x) {
+        BigInteger result = BigInteger.ZERO;
+        for (int i = 0; i < points.size(); i++) {
+            BigInteger term = points.get(i).y; // Start with the y value of the point
+            for (int j = 0; j < points.size(); j++) {
+                if (i != j) {
+                    term = term.multiply(x.subtract(BigInteger.valueOf(points.get(j).x))) // (x - x_j)
+                               .divide(BigInteger.valueOf(points.get(i).x - points.get(j).x)); // (x_i - x_j)
+                }
+            }
+            result = result.add(term); // Sum up the terms
+        }
+        return result;
+    }
+
+    // Format BigInteger with commas for readability
+    private static String formatBigInteger(BigInteger number) {
+        return String.format("%,d", number);
+    }
+}
